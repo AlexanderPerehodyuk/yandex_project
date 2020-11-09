@@ -1,7 +1,7 @@
 import sys
 from math import cos, pi, sin, radians
 
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QRect
 from PyQt5.QtGui import QMouseEvent, QKeyEvent, QPainter, QPaintEvent, QColor, QPen
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 from random import randint
@@ -12,36 +12,54 @@ class mw(QMainWindow):
         super().__init__()
         self.resize(500, 500)
         self.setMouseTracking(True)
-        self.qp = QPainter()
+        self.painter = QPainter()
+        self.lastPoint = QPoint()
         self.mx = None
+        self.myPenColor = QColor(0xffffff)
+        self.myPenWidth = 2
+        self.scribbling = False
         self.my = None
         self.f = None
 
-    def mouseMoveEvent(self, e: QMouseEvent):
-        self.statusBar().showMessage('{}, {}'.format(e.x(), e.y()))
-        self.ex = e.x()
-        self.ey = e.y()
-
-    def mousePressEvent(self, e: QMouseEvent):
-        if e.button() == Qt.LeftButton:
-            self.f = 1
-            self.mx = e.x()
-            self.my = e.y()
-        elif e.button() == Qt.RightButton:
-            self.f = 2
-            
-        self.repaint()
-
+    def mousePressEvent(self, event):
+        if event.button() and event.button() == Qt.LeftButton:
+            self.lastPoint = QPoint(event.pos())
+            self.scribbling = True
+ 
+    def mouseMoveEvent(self, event):
+       self.statusBar().showMessage('{}, {}'.format(event.x(), event.y()))
+       if(event.buttons() & Qt.LeftButton) and self.scribbling:
+            self.lastPoint = QPoint(event.pos())
+            self.drawLineTo(self.lastPoint)
+ 
+ 
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and self.scribbling:
+            self.lastPoint = QPoint(event.pos())
+            self.scribbling = False
+            self.update()
+    
     def paintEvent(self, e: QPaintEvent):
-        a = randint(1, 300)
-        self.qp.begin(self)
-        self.qp.setBrush(QColor(randint(0, 0xffffff)))
-        if self.f == 2:
-            pen = QPen(Qt.black, 2, Qt.SolidLine)
-            self.qp.setPen(pen)
-            self.qp.drawLine(self.ex, self.ey, self.mx, self.my)
-      
-        self.qp.end()
+        self.drawLineTo(self.lastPoint)
+    
+    def drawLineTo(self, endPoint):
+        self.painter.begin(self)
+        pen = QPen()
+        self.painter.setBrush(self.myPenColor)
+        pen.setWidth(self.myPenWidth)
+        pen.setStyle(Qt.SolidLine)
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setJoinStyle(Qt.RoundJoin)
+        self.painter.setPen(pen)
+        
+        self.painter.drawLine(self.lastPoint, endPoint)
+        self.modified = True
+ 
+        rad = self.myPenWidth / 2 + 2
+        self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
+        self.lastPoint = endPoint
+        self.painter.end()
+
 
 
 if __name__ == '__main__':
