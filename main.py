@@ -1,66 +1,92 @@
 import sys
 from math import cos, pi, sin, radians
 
-from PyQt5.QtCore import Qt, QPoint, QRect
-from PyQt5.QtGui import QMouseEvent, QKeyEvent, QPainter, QPaintEvent, QColor, QPen
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
-from random import randint
+from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtGui import QMouseEvent, QImage, QPen
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QLabel, QMenuBar, QMenu, QAction, QFileDialog
 
 
 class mw(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.resize(500, 500)
-        self.setMouseTracking(True)
-        self.painter = QPainter()
+        top = 400
+        left = 400
+        widht = 400
+        height = 400
+        self.setGeometry(top, left, widht, height)
+        self.setWindowTitle
+        ("MyPaintAnalog")
+        self.image = QImage(self.size(), QImage.Format_RGB32)
+        self.image.fill(Qt.white)
+
+        self.drawing = False
+        self.brushSize = 2
+        self.brushColor = Qt.black
         self.lastPoint = QPoint()
-        self.mx = None
-        self.myPenColor = QColor(0xffffff)
-        self.myPenWidth = 2
-        self.scribbling = False
-        self.my = None
-        self.f = None
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu("File")
 
-    def mousePressEvent(self, event):
-        if event.button() and event.button() == Qt.LeftButton:
-            self.lastPoint = QPoint(event.pos())
-            self.scribbling = True
- 
-    def mouseMoveEvent(self, event):
-       self.statusBar().showMessage('{}, {}'.format(event.x(), event.y()))
-       if(event.buttons() & Qt.LeftButton) and self.scribbling:
-            self.lastPoint = QPoint(event.pos())
-            self.drawLineTo(self.lastPoint)
- 
- 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.scribbling:
-            self.lastPoint = QPoint(event.pos())
-            self.scribbling = False
-            self.update()
-    
-    def paintEvent(self, e: QPaintEvent):
-        self.drawLineTo(self.lastPoint)
-    
-    def drawLineTo(self, endPoint):
-        self.painter.begin(self)
-        pen = QPen()
-        self.painter.setBrush(self.myPenColor)
-        pen.setWidth(self.myPenWidth)
-        pen.setStyle(Qt.SolidLine)
-        pen.setCapStyle(Qt.RoundCap)
-        pen.setJoinStyle(Qt.RoundJoin)
-        self.painter.setPen(pen)
+        brushMenu = mainMenu.addMenu("Brush Size")
+
+        brushColor = mainMenu.addMenu("Brush Color")
+
+        saveAction = QAction("Save", self)
+
+        saveAction.setShortcut("Cntrl+S")
+        fileMenu.addAction(saveAction)
+        saveAction.triggered.connect(self.save)
+
+        clearAction = QAction("Clear", self)
+        saveAction.setShortcut("Cntrl+C")
+        fileMenu.addAction(clearAction)
+        clearAction.triggered.connect(self.save)
+
+        tpAction = QAction("Three pixel", self)
+        brushMenu.addAction(tpAction)
+        tpAction.triggered.connect(self.tp)
+
+
+        blackAction = QAction("Black", self)
+        brushColor.addAction(blackAction)
+        blackAction.triggered.connect(self.bColor)
+
+        def mousePressEvent(self, event):
+          if event.button() == Qt.LeftButton:
+            self.drawing = True
+            self.lastPoint = event.pos()
+
+        def mouseMoveEvent(self, event):
+            if (event.button() & Qt.LeftButton) and self.drawing:
+              painter = QPainter(self.image)
+              painter.setPen(QPen(self.brushColor, self.brushSize, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+              painter.drawLine(self.lastPoint, event.pos())
+              self.lastPoint = event.pos()
+              self.update()
         
-        self.painter.drawLine(self.lastPoint, endPoint)
-        self.modified = True
- 
-        rad = self.myPenWidth / 2 + 2
-        self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
-        self.lastPoint = endPoint
-        self.painter.end()
+        def mouseReleazeEvent(self, event):
+          if event.button() == Qt.LeftButton:
+            self.drawing = False
+            
+        def paintEvent(self, event):
+          canvaspainter = QPainter(self)
+          canvaspainter.drawImage(self.rect(), self.image(), self.image.rect())
+        
+        def save(self):
+          filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png);;JPEG(*.jpg *.jpeg);; ALL Files(*.*)")
+          if filePath == "":
+            return
+          else:
+            self.image.save(filePath)
+          
+        def clear(self):
+          self.image.fill(Qt.white)
+          self.update()
 
+        def tp(self):
+          self.brushSize = 3
 
+        def bColor(self):
+          self.brushColor = Qt.black
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
