@@ -2,7 +2,7 @@ import sys
 from math import cos, pi, sin, radians
 
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QMouseEvent, QImage, QPen
+from PyQt5.QtGui import QMouseEvent, QImage, QPen, QPainter
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QLabel, QMenuBar, QMenu, QAction, QFileDialog
 
 
@@ -37,7 +37,7 @@ class mw(QMainWindow):
         saveAction.triggered.connect(self.save)
 
         clearAction = QAction("Clear", self)
-        saveAction.setShortcut("Cntrl+C")
+        clearAction.setShortcut("Cntrl+C")
         fileMenu.addAction(clearAction)
         clearAction.triggered.connect(self.save)
 
@@ -45,10 +45,38 @@ class mw(QMainWindow):
         brushMenu.addAction(tpAction)
         tpAction.triggered.connect(self.tp)
 
+        fpAction = QAction("Five pixel", self)
+        brushMenu.addAction(fpAction)
+        fpAction.triggered.connect(self.fp)
+
+        npAction = QAction("Nine pixel", self)
+        brushMenu.addAction(npAction)
+        npAction.triggered.connect(self.np)
+
+        whiteAction = QAction("Стерка", self)
+        brushColor.addAction(whiteAction)
+        whiteAction.triggered.connect(self.wColor)
 
         blackAction = QAction("Black", self)
         brushColor.addAction(blackAction)
         blackAction.triggered.connect(self.bColor)
+
+        redAction = QAction("Red", self)
+        brushColor.addAction(redAction)
+        redAction.triggered.connect(self.rColor)
+
+        GreenAction = QAction("Green", self)
+        brushColor.addAction(GreenAction)
+        GreenAction.triggered.connect(self.gColor)
+
+        blueAction = QAction("Blue", self)
+        brushColor.addAction(blueAction)
+        blueAction.triggered.connect(self.bColor)
+
+        yAction = QAction("Yellow", self)
+        brushColor.addAction(yAction)
+        yAction.triggered.connect(self.yColor)
+
 
         def mousePressEvent(self, event):
           if event.button() == Qt.LeftButton:
@@ -84,9 +112,31 @@ class mw(QMainWindow):
 
         def tp(self):
           self.brushSize = 3
+        
+        def fp(self):
+          self.brushSize = 5
+        
+        def np(self):
+          self.brushSize = 9
 
         def bColor(self):
           self.brushColor = Qt.black
+        
+        def wColor(self):
+          self.brushColor = Qt.white
+        
+        def rColor(self):
+          self.brushColor = Qt.red
+        
+        def gColor(self):
+          self.brushColor = Qt.green
+        
+        def bColor(self):
+          self.brushColor = Qt.blue
+        
+        def yColor(self):
+          self.brushColor = Qt.yellow
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
