@@ -9,12 +9,8 @@ from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QLabel, QMenuBar
 class mw(QMainWindow):
     def __init__(self):
         super().__init__()
-        top = 400
-        left = 400
-        widht = 400
-        height = 400
         #устанавливаем размеры
-        self.setGeometry(top, left, widht, height)
+        self.resize(500, 500)
         #устанавливаем название
         self.setWindowTitle
         ("MyPaintAnalog")
@@ -54,7 +50,12 @@ class mw(QMainWindow):
         clearAction = QAction("Clear", self)
         clearAction.setShortcut("Cntrl+C")
         fileMenu.addAction(clearAction)
-        clearAction.triggered.connect(self.save)
+        clearAction.triggered.connect(self.clear)
+
+        openAction = QAction("Open", self)
+        openAction.setShortcut("Cntrl+O")
+        fileMenu.addAction(openAction)
+        openAction.triggered.connect(self.open)
 
         #тоже самое но без быстрой клавиши
         tpAction = QAction("Three pixel", self)
@@ -102,78 +103,88 @@ class mw(QMainWindow):
         yAction.triggered.connect(self.yColor)
 
 
-        def mousePressEvent(self, event):
-        #при нажатии на кнопку в последнию кнопку передается места где была нажата кнопка и рисование становиться rue
+    def mousePressEvent(self, event):
+        #при нажатии на кнопку в последнию кнопку передается места где была нажата кнопка и рисование становиться True
           if event.button() == Qt.LeftButton:
             self.drawing = True
             self.lastPoint = event.pos()
-
-        def mouseMoveEvent(self, event):
-        #рисование линиии и обновление экрана
-            if (event.button() & Qt.LeftButton) and self.drawing:
-              painter = QPainter(self.image)
-              painter.setPen(QPen(self.brushColor, self.brushSize, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-              painter.drawLine(self.lastPoint, event.pos())
-              self.lastPoint = event.pos()
-              self.update()
-        
-        def mouseReleazeEvent(self, event):
-        #рисование становиться False чтобы при отпуске  кнопки линия переставала рисоваться
-          if event.button() == Qt.LeftButton:
-            self.drawing = False
             
-        def paintEvent(self, event):
+
+    def mouseMoveEvent(self, event):
+        #рисование линиии и обновление экрана
+          if self.drawing:
+            painter = QPainter(self.image)
+            
+            painter.setPen(QPen(self.brushColor, self.brushSize, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            painter.drawLine(self.lastPoint, event.pos())
+            self.lastPoint = event.pos()
+            
+            self.update()
+        
+    def mouseReleazeEvent(self, event):
+        #рисование становиться False чтобы при отпуске  кнопки линия переставала рисоваться
+        if event.button() == Qt.LeftButton:
+          self.drawing = False
+            
+    def paintEvent(self, event):
           canvaspainter = QPainter(self)
-          canvaspainter.drawImage(self.rect(), self.image(), self.image.rect())
+          canvaspainter.drawImage(self.rect(), self.image, self.image.rect())
         
-        def save(self):
+    def save(self):
         #сохранение путя для сохранение фото и сохранение если путь указан
-          filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png);;JPEG(*.jpg *.jpeg);; ALL Files(*.*)")
-          if filePath == "":
-            return
-          else:
-            self.image.save(filePath)
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png);;JPEG(*.jpg *.jpeg);; ALL Files(*.*)")
+        if filePath == "":
+          return
+        else:
+          self.image.save(filePath)
+    
+    def open(self):
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png);;JPEG(*.jpg *.jpeg);; ALL Files(*.*)")
+        if filePath == "":
+          return
+        else:
+          self.image = QImage(filePath)
           
-        def clear(self):
+    def clear(self):
         #очищение холста и обновление экрана
-          self.image.fill(Qt.white)
-          self.update()
+        self.image.fill(Qt.white)
+        self.update()
 
-        def tp(self):
+    def tp(self):
         #размер линии при рисовки будет 3 до следущего изменения
-          self.brushSize = 3
+        self.brushSize = 3
         
-        def fp(self):
+    def fp(self):
         #размер линии при рисовки будет 5 до следущего изменения
-          self.brushSize = 5
+        self.brushSize = 5
         
-        def np(self):
+    def np(self):
         #размер линии при рисовки будет 9 до следущего изменения
-          self.brushSize = 9
+        self.brushSize = 9
 
-        def bColor(self):
-        #цвет линии при рисовки будет черный до следущего изменения
-          self.brushColor = Qt.black
+    def bColor(self):
+      #цвет линии при рисовки будет черный до следущего изменения
+        self.brushColor = Qt.black
         
-        def wColor(self):
+    def wColor(self):
         #цвет линии при рисовки будет черный до следущего изменения
-          self.brushColor = Qt.white
+        self.brushColor = Qt.white
         
-        def rColor(self):
+    def rColor(self):
         #цвет линии при рисовки будет красный до следущего изменения
-          self.brushColor = Qt.red
+        self.brushColor = Qt.red
         
-        def gColor(self):
+    def gColor(self):
         #цвет линии при рисовки будет зеленый до следущего изменения
-          self.brushColor = Qt.green
+        self.brushColor = Qt.green
         
-        def bColor(self):
+    def bColor(self):
         #цвет линии при рисовки будет синий до следущего изменения
-          self.brushColor = Qt.blue
+        self.brushColor = Qt.blue
         
-        def yColor(self):
+    def yColor(self):
         #цвет линии при рисовки будет желтый до следущего изменения
-          self.brushColor = Qt.yellow
+        self.brushColor = Qt.yellow
 
 
 if __name__ == '__main__':
